@@ -40,7 +40,7 @@ class Lineup_JSON_Origin():
                                  'GuideNumber': channel_obj.number,
                                  'GuideName': channel_obj.dict['name'],
                                  'Tags': ",".join(channel_obj.dict['tags']),
-                                 'URL': '/hdhr/auto/v%s' % channel_obj.number,
+                                 'URL': '/hdhr/%s/auto/v%s' % (origin, channel_obj.number),
                                  'HD': channel_obj.dict["HD"],
                                  "Favorite": channel_obj.dict["favorite"],
                                 }
