@@ -3,41 +3,32 @@ from flask import request, abort, Response
 from fHDHR.exceptions import TunerError
 
 
-class Lineup_Post():
-    endpoints = ["/lineup.post", "/hdhr/lineup.post"]
-    endpoint_name = "hdhr_lineup_post"
+class Lineup_Post_Origin():
+    endpoints = ["/hdhr/<origin>/lineup.post"]
+    endpoint_name = "hdhr_lineup_post_origin"
     endpoint_methods = ["POST"]
 
     def __init__(self, fhdhr):
         self.fhdhr = fhdhr
 
-    def __call__(self, *args):
-        return self.get(*args)
+    def __call__(self, origin, *args):
+        return self.get(origin, *args)
 
-    @property
-    def source(self):
-        if self.fhdhr.config.dict["hdhr"]["source"]:
-            return self.fhdhr.config.dict["hdhr"]["source"]
-        elif len(self.fhdhr.origins.valid_origins):
-            return self.fhdhr.origins.valid_origins[0]
-        else:
-            return None
+    def get(self, origin, *args):
 
-    def get(self, *args):
-
-        if self.source in self.fhdhr.origins.valid_origins:
+        if origin in self.fhdhr.origins.valid_origins:
 
             if 'scan' in list(request.args.keys()):
 
                 if request.args['scan'] == 'start':
                     try:
-                        self.fhdhr.device.tuners.tuner_scan(self.source)
+                        self.fhdhr.device.tuners.tuner_scan(origin)
                     except TunerError as e:
                         self.fhdhr.logger.info(str(e))
                     return Response(status=200, mimetype='text/html')
 
                 elif request.args['scan'] == 'abort':
-                    self.fhdhr.device.tuners.stop_tuner_scan(self.source)
+                    self.fhdhr.device.tuners.stop_tuner_scan(origin)
                     return Response(status=200, mimetype='text/html')
 
                 else:
@@ -50,18 +41,18 @@ class Lineup_Post():
                     channel_method = request.args['favorite'][0]
                     channel_number = request.args['favorite'][1:]
 
-                    if str(channel_number) not in [str(x) for x in self.fhdhr.device.channels.get_channel_list("number", self.source)]:
+                    if str(channel_number) not in [str(x) for x in self.fhdhr.device.channels.get_channel_list("number", origin)]:
                         response = Response("Not Found", status=404)
                         response.headers["X-fHDHR-Error"] = "801 - Unknown Channel"
                         self.fhdhr.logger.error(response.headers["X-fHDHR-Error"])
                         abort(response)
 
                     if channel_method == "+":
-                        self.fhdhr.device.channels.set_channel_enablement("number", channel_number, channel_method, self.source)
+                        self.fhdhr.device.channels.set_channel_enablement("number", channel_number, channel_method, origin)
                     elif channel_method == "-":
-                        self.fhdhr.device.channels.set_channel_enablement("number", channel_number, channel_method, self.source)
+                        self.fhdhr.device.channels.set_channel_enablement("number", channel_number, channel_method, origin)
                     elif channel_method == "x":
-                        self.fhdhr.device.channels.set_channel_enablement("number", channel_number, "toggle", self.source)
+                        self.fhdhr.device.channels.set_channel_enablement("number", channel_number, "toggle", origin)
 
                 else:
                     self.fhdhr.logger.warning("Unknown favorite command %s" % request.args['favorite'])

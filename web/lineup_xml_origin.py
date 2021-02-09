@@ -1,18 +1,19 @@
 from flask import Response, request
-import json
+from io import BytesIO
+import xml.etree.ElementTree
 
-from fHDHR.tools import channel_sort
+from fHDHR.tools import channel_sort, sub_el
 
 
-class Lineup_JSON():
-    endpoints = ["/lineup.json", "/hdhr/lineup.json"]
-    endpoint_name = "hdhr_lineup_json"
+class Lineup_XML_Origin():
+    endpoints = ["/hdhr/<origin>/lineup.xml"]
+    endpoint_name = "hdhr_lineup_xml_origin"
 
     def __init__(self, fhdhr):
         self.fhdhr = fhdhr
 
-    def __call__(self, *args):
-        return self.get(*args)
+    def __call__(self, origin, *args):
+        return self.get(origin, *args)
 
     @property
     def source(self):
@@ -23,7 +24,7 @@ class Lineup_JSON():
         else:
             return None
 
-    def get(self, *args):
+    def get(self, origin, *args):
 
         base_url = request.url_root[:-1]
 
@@ -31,11 +32,11 @@ class Lineup_JSON():
 
         chan_guide = []
 
-        if self.source in self.fhdhr.origins.valid_origins:
+        if origin in self.fhdhr.origins.valid_origins:
 
             channelslist = {}
-            for fhdhr_id in [x["id"] for x in self.fhdhr.device.channels.get_channels(self.source)]:
-                channel_obj = self.fhdhr.device.channels.get_channel_obj("id", fhdhr_id, self.source)
+            for fhdhr_id in [x["id"] for x in self.fhdhr.device.channels.get_channels(origin)]:
+                channel_obj = self.fhdhr.device.channels.get_channel_obj("id", fhdhr_id, origin)
                 if channel_obj.enabled:
                     channelslist[channel_obj.number] = channel_obj
 
@@ -60,8 +61,17 @@ class Lineup_JSON():
 
                 chan_guide.append(lineup_dict)
 
-        lineup_json = json.dumps(chan_guide, indent=4)
+        out = xml.etree.ElementTree.Element('Lineup')
+        for lineup_dict in chan_guide:
+            program_out = sub_el(out, 'Program')
+            for key in list(lineup_dict.keys()):
+                sub_el(program_out, str(key), str(lineup_dict[key]))
+
+        fakefile = BytesIO()
+        fakefile.write(b'<?xml version="1.0" encoding="UTF-8"?>\n')
+        fakefile.write(xml.etree.ElementTree.tostring(out, encoding='UTF-8'))
+        lineup_xml = fakefile.getvalue()
 
         return Response(status=200,
-                        response=lineup_json,
-                        mimetype='application/json')
+                        response=lineup_xml,
+                        mimetype='application/xml')

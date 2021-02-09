@@ -8,15 +8,7 @@ class Plugin_OBJ():
         self.broadcast_ip = broadcast_ip
         self.device_xml_path = '/hdhr/device.xml'
 
-        self.cable_schema = "urn:schemas-opencable-com:service:Security:1"
-        self.ota_schema = "urn:schemas-upnp-org:device:MediaServer:1"
-
-        if self.fhdhr.config.dict["hdhr"]["reporting_tuner_type"].lower() == "antenna":
-            self.schema = self.ota_schema
-        elif self.fhdhr.config.dict["hdhr"]["reporting_tuner_type"].lower() == "cable":
-            self.schema = self.cable_schema
-        else:
-            self.schema = self.ota_schema
+        self.schema = "urn:schemas-upnp-org:device:MediaServer:1"
 
         self.max_age = max_age
 
@@ -24,20 +16,20 @@ class Plugin_OBJ():
     def enabled(self):
         return self.fhdhr.config.dict["hdhr"]["enabled"]
 
-    @property
-    def notify(self):
-
+    def create_ssdp_content(self, origin):
         data = ''
         data_command = "NOTIFY * HTTP/1.1"
+
+        device_xml_path = "/hdhr/%s/device.xml" % origin
 
         data_dict = {
                     "HOST": "%s:%s" % ("239.255.255.250", 1900),
                     "NT": self.schema,
                     "NTS": "ssdp:alive",
-                    "USN": 'uuid:%s::%s' % (self.fhdhr.config.dict["main"]["uuid"], self.schema),
+                    "USN": 'uuid:%s%s::%s' % (self.fhdhr.config.dict["main"]["uuid"], origin, self.schema),
                     "SERVER": 'fHDHR/%s UPnP/1.0' % self.fhdhr.version,
-                    "LOCATION": "%s%s" % (self.fhdhr.api.base, self.device_xml_path),
-                    "AL": "%s%s" % (self.fhdhr.api.base, self.device_xml_path),
+                    "LOCATION": "%s%s" % (self.fhdhr.api.base, device_xml_path),
+                    "AL": "%s%s" % (self.fhdhr.api.base, device_xml_path),
                     "Cache-Control:max-age=": self.max_age
                     }
 
@@ -47,3 +39,11 @@ class Plugin_OBJ():
         data += "\r\n"
 
         return data
+
+    @property
+    def notify(self):
+        ssdp_content = []
+        for origin in self.fhdhr.origins.valid_origins:
+            data = self.create_ssdp_content(origin)
+            ssdp_content.append(data)
+        return ssdp_content

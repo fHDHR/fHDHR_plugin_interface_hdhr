@@ -4,26 +4,17 @@ import json
 from fHDHR.tools import channel_sort
 
 
-class Lineup_JSON():
-    endpoints = ["/lineup.json", "/hdhr/lineup.json"]
-    endpoint_name = "hdhr_lineup_json"
+class Lineup_JSON_Origin():
+    endpoints = ["/hdhr/<origin>/lineup.json"]
+    endpoint_name = "hdhr_lineup_json_origin"
 
     def __init__(self, fhdhr):
         self.fhdhr = fhdhr
 
-    def __call__(self, *args):
-        return self.get(*args)
+    def __call__(self, origin, *args):
+        return self.get(origin, *args)
 
-    @property
-    def source(self):
-        if self.fhdhr.config.dict["hdhr"]["source"]:
-            return self.fhdhr.config.dict["hdhr"]["source"]
-        elif len(self.fhdhr.origins.valid_origins):
-            return self.fhdhr.origins.valid_origins[0]
-        else:
-            return None
-
-    def get(self, *args):
+    def get(self, origin, *args):
 
         base_url = request.url_root[:-1]
 
@@ -31,11 +22,11 @@ class Lineup_JSON():
 
         chan_guide = []
 
-        if self.source in self.fhdhr.origins.valid_origins:
+        if origin in self.fhdhr.origins.valid_origins:
 
             channelslist = {}
-            for fhdhr_id in [x["id"] for x in self.fhdhr.device.channels.get_channels(self.source)]:
-                channel_obj = self.fhdhr.device.channels.get_channel_obj("id", fhdhr_id, self.source)
+            for fhdhr_id in [x["id"] for x in self.fhdhr.device.channels.get_channels(origin)]:
+                channel_obj = self.fhdhr.device.channels.get_channel_obj("id", fhdhr_id, origin)
                 if channel_obj.enabled:
                     channelslist[channel_obj.number] = channel_obj
 

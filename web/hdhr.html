@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+  <h4 style="text-align: center;">HDHR URLs</h4>
+
+  <div class="container">
+    <table class="table-medium center action-col">
+      <tbody>
+        <tr>
+          <th>Origin</th>
+          <th>URL to Add to Client (Plex/Emby/Channels)</th>
+        </tr>
+
+        {% for origindict in origin_dict_list %}
+          <tr>
+            <td>{{ origindict["name"] }}</td>
+            <td>{{ origindict["url"] }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+{% endblock %}
