@@ -37,8 +37,9 @@ class Lineup_XML_Origin():
             channelslist = {}
             for fhdhr_id in [x["id"] for x in self.fhdhr.device.channels.get_channels(origin)]:
                 channel_obj = self.fhdhr.device.channels.get_channel_obj("id", fhdhr_id, origin)
-                if channel_obj.enabled:
-                    channelslist[channel_obj.number] = channel_obj
+                if channel_obj:
+                    if channel_obj.enabled:
+                        channelslist[channel_obj.number] = channel_obj
 
             # Sort the channels
             sorted_channel_list = channel_sort(list(channelslist.keys()))
