@@ -2,44 +2,35 @@ from flask import Response
 import json
 
 
-class Lineup_Status_JSON():
-    endpoints = ["/lineup_status.json", "/hdhr/lineup_status.json"]
-    endpoint_name = "hdhr_lineup_status_json"
+class Lineup_Status_JSON_Origin():
+    endpoints = ["/hdhr/<origin>/lineup_status.json"]
+    endpoint_name = "hdhr_lineup_status_json_origin"
 
     def __init__(self, fhdhr):
         self.fhdhr = fhdhr
 
-    def __call__(self, *args):
-        return self.get(*args)
+    def __call__(self, origin, *args):
+        return self.get(origin, *args)
 
-    @property
-    def source(self):
-        if self.fhdhr.config.dict["hdhr"]["source"]:
-            return self.fhdhr.config.dict["hdhr"]["source"]
-        elif len(self.fhdhr.origins.valid_origins):
-            return self.fhdhr.origins.valid_origins[0]
-        else:
-            return None
+    def get(self, origin, *args):
 
-    def get(self, *args):
+        if origin in self.fhdhr.origins.valid_origins:
 
-        tuners_scanning = 0
-        if self.source in self.fhdhr.origins.valid_origins:
-
-            tuner_status = self.fhdhr.device.tuners.status(self.source)
-
+            tuner_status = self.fhdhr.device.tuners.status(origin)
+            tuners_scanning = 0
             for tuner_number in list(tuner_status.keys()):
                 if tuner_status[tuner_number]["status"] == "Scanning":
                     tuners_scanning += 1
 
-            channel_count = len(list(self.fhdhr.device.channels.list[self.source].keys()))
+            channel_count = len(list(self.fhdhr.device.channels.list[origin].keys()))
 
             if tuners_scanning:
-                jsonlineup = self.scan_in_progress(self.source)
+                jsonlineup = self.scan_in_progress(origin)
             elif not channel_count:
-                jsonlineup = self.scan_in_progress(self.source)
+                jsonlineup = self.scan_in_progress(origin)
             else:
                 jsonlineup = self.not_scanning()
+
         else:
             jsonlineup = {}
 
