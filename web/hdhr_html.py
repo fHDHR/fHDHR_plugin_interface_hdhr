@@ -14,7 +14,7 @@ class HDHR_HTML():
         self.fhdhr = fhdhr
         self.plugin_utils = plugin_utils
 
-        self.template_file = pathlib.Path(plugin_utils.config.dict["plugin_web_paths"][plugin_utils.namespace]["path"]).joinpath('hdhr.html')
+        self.template_file = pathlib.Path(plugin_utils.path).joinpath('hdhr.html')
         self.template = StringIO()
         self.template.write(open(self.template_file).read())
 
