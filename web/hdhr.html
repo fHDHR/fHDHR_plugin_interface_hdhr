@@ -15,7 +15,7 @@
         {% for origindict in origin_dict_list %}
           <tr>
             <td>{{ origindict["name"] }}</td>
-            <td>{{ origindict["url"] }}</td>
+            <td><a href="{{ origindict["url"] }}">{{ origindict["url"] }}</a></td>
           </tr>
         {% endfor %}
       </tbody>
