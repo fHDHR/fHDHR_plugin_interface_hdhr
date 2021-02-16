@@ -1,44 +1,30 @@
 from flask import request, abort, Response
 
-from fHDHR.exceptions import TunerError
-
 
 class Lineup_Post():
     endpoints = ["/lineup.post", "/hdhr/lineup.post"]
     endpoint_name = "hdhr_lineup_post"
     endpoint_methods = ["POST"]
 
-    def __init__(self, fhdhr):
+    def __init__(self, fhdhr, plugin_utils):
         self.fhdhr = fhdhr
+        self.plugin_utils = plugin_utils
+        self.interface = self.fhdhr.device.interfaces[self.plugin_utils.namespace]
 
     def __call__(self, *args):
         return self.get(*args)
 
-    @property
-    def source(self):
-        if self.fhdhr.config.dict["hdhr"]["source"]:
-            return self.fhdhr.config.dict["hdhr"]["source"]
-        elif len(self.fhdhr.origins.valid_origins):
-            return self.fhdhr.origins.valid_origins[0]
-        else:
-            return None
-
     def get(self, *args):
 
-        if self.source in self.fhdhr.origins.valid_origins:
+        if self.interface.source in self.fhdhr.origins.valid_origins:
 
             if 'scan' in list(request.args.keys()):
 
                 if request.args['scan'] == 'start':
-                    try:
-                        self.fhdhr.device.tuners.tuner_scan(self.source)
-                    except TunerError as e:
-                        self.fhdhr.logger.info(str(e))
-                    return Response(status=200, mimetype='text/html')
+                    self.interface.lineup_post_scan_start(self.interface.source)
 
                 elif request.args['scan'] == 'abort':
-                    self.fhdhr.device.tuners.stop_tuner_scan(self.source)
-                    return Response(status=200, mimetype='text/html')
+                    self.interface.lineup_post_scan_abort(self.interface.source)
 
                 else:
                     self.fhdhr.logger.warning("Unknown scan command %s" % request.args['scan'])
@@ -47,21 +33,12 @@ class Lineup_Post():
             elif 'favorite' in list(request.args.keys()):
                 if request.args['favorite'].startstwith(tuple(["+", "-", "x"])):
 
-                    channel_method = request.args['favorite'][0]
-                    channel_number = request.args['favorite'][1:]
-
-                    if str(channel_number) not in [str(x) for x in self.fhdhr.device.channels.get_channel_list("number", self.source)]:
+                    error = self.interface.lineup_post_favorite(self.interface.source, request.args['favorite'])
+                    if error:
                         response = Response("Not Found", status=404)
-                        response.headers["X-fHDHR-Error"] = "801 - Unknown Channel"
+                        response.headers["X-fHDHR-Error"] = error
                         self.fhdhr.logger.error(response.headers["X-fHDHR-Error"])
                         abort(response)
-
-                    if channel_method == "+":
-                        self.fhdhr.device.channels.set_channel_enablement("number", channel_number, channel_method, self.source)
-                    elif channel_method == "-":
-                        self.fhdhr.device.channels.set_channel_enablement("number", channel_number, channel_method, self.source)
-                    elif channel_method == "x":
-                        self.fhdhr.device.channels.set_channel_enablement("number", channel_number, "toggle", self.source)
 
                 else:
                     self.fhdhr.logger.warning("Unknown favorite command %s" % request.args['favorite'])
@@ -69,6 +46,8 @@ class Lineup_Post():
 
             else:
                 return abort(501, "Not a valid command")
+
+            return Response(status=200, mimetype='text/html')
 
         else:
             return abort(501, "Not Implemented")

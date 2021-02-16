@@ -6,65 +6,20 @@ class Lineup_Status_JSON():
     endpoints = ["/lineup_status.json", "/hdhr/lineup_status.json"]
     endpoint_name = "hdhr_lineup_status_json"
 
-    def __init__(self, fhdhr):
+    def __init__(self, fhdhr, plugin_utils):
         self.fhdhr = fhdhr
+        self.plugin_utils = plugin_utils
+        self.interface = self.fhdhr.device.interfaces[self.plugin_utils.namespace]
 
     def __call__(self, *args):
         return self.get(*args)
 
-    @property
-    def source(self):
-        if self.fhdhr.config.dict["hdhr"]["source"]:
-            return self.fhdhr.config.dict["hdhr"]["source"]
-        elif len(self.fhdhr.origins.valid_origins):
-            return self.fhdhr.origins.valid_origins[0]
-        else:
-            return None
-
     def get(self, *args):
 
-        tuners_scanning = 0
-        if self.source in self.fhdhr.origins.valid_origins:
-
-            tuner_status = self.fhdhr.device.tuners.status(self.source)
-
-            for tuner_number in list(tuner_status.keys()):
-                if tuner_status[tuner_number]["status"] == "Scanning":
-                    tuners_scanning += 1
-
-            channel_count = len(list(self.fhdhr.device.channels.list[self.source].keys()))
-
-            if tuners_scanning:
-                jsonlineup = self.scan_in_progress(self.source)
-            elif not channel_count:
-                jsonlineup = self.scan_in_progress(self.source)
-            else:
-                jsonlineup = self.not_scanning()
-        else:
-            jsonlineup = {}
-
-        lineup_json = json.dumps(jsonlineup, indent=4)
+        jsonlineup = {}
+        if self.interface.source in self.fhdhr.origins.valid_origins:
+            jsonlineup = self.interface.lineup_status(self.interface.source)
 
         return Response(status=200,
-                        response=lineup_json,
+                        response=json.dumps(jsonlineup, indent=4),
                         mimetype='application/json')
-
-    def scan_in_progress(self, origin):
-
-        channel_count = len(list(self.fhdhr.device.channels.list[origin].keys()))
-
-        jsonlineup = {
-                      "ScanInProgress": "true",
-                      "Progress": 99,
-                      "Found": channel_count
-                      }
-        return jsonlineup
-
-    def not_scanning(self):
-        jsonlineup = {
-                      "ScanInProgress": "false",
-                      "ScanPossible": "true",
-                      "Source": self.fhdhr.config.dict["hdhr"]["reporting_tuner_type"],
-                      "SourceList": [self.fhdhr.config.dict["hdhr"]["reporting_tuner_type"]],
-                      }
-        return jsonlineup

@@ -32,26 +32,26 @@ class Plugin_OBJ():
         self.fhdhr = fhdhr
         self.plugin_utils = plugin_utils
 
-        self.device_xml = HDHR_Device_XML(fhdhr)
+        self.device_xml = HDHR_Device_XML(fhdhr, plugin_utils)
         self.hdhr_html = HDHR_HTML(fhdhr, plugin_utils)
 
-        self.discover_json = Discover_JSON(fhdhr)
-        self.discover_json_origin = Discover_JSON_Origin(fhdhr)
+        self.discover_json = Discover_JSON(fhdhr, plugin_utils)
+        self.discover_json_origin = Discover_JSON_Origin(fhdhr, plugin_utils)
 
-        self.lineup_json = Lineup_JSON(fhdhr)
-        self.lineup_json_origin = Lineup_JSON_Origin(fhdhr)
+        self.lineup_json = Lineup_JSON(fhdhr, plugin_utils)
+        self.lineup_json_origin = Lineup_JSON_Origin(fhdhr, plugin_utils)
 
-        self.lineup_xml = Lineup_XML(fhdhr)
-        self.lineup_xml_origin = Lineup_XML_Origin(fhdhr)
+        self.lineup_xml = Lineup_XML(fhdhr, plugin_utils)
+        self.lineup_xml_origin = Lineup_XML_Origin(fhdhr, plugin_utils)
 
-        self.lineup_post = Lineup_Post(fhdhr)
-        self.lineup_post_origin = Lineup_Post_Origin(fhdhr)
+        self.lineup_post = Lineup_Post(fhdhr, plugin_utils)
+        self.lineup_post_origin = Lineup_Post_Origin(fhdhr, plugin_utils)
 
-        self.lineup_status_json = Lineup_Status_JSON(fhdhr)
-        self.lineup_status_json_origin = Lineup_Status_JSON_Origin(fhdhr)
+        self.lineup_status_json = Lineup_Status_JSON(fhdhr, plugin_utils)
+        self.lineup_status_json_origin = Lineup_Status_JSON_Origin(fhdhr, plugin_utils)
 
-        self.auto = Auto(fhdhr)
-        self.auto_origin = Auto_Origin(fhdhr)
+        self.auto = Auto(fhdhr, plugin_utils)
+        self.auto_origin = Auto_Origin(fhdhr, plugin_utils)
 
-        self.tuner = Tuner(fhdhr)
-        self.tuner_origin = Tuner_Origin(fhdhr)
+        self.tuner = Tuner(fhdhr, plugin_utils)
+        self.tuner_origin = Tuner_Origin(fhdhr, plugin_utils)

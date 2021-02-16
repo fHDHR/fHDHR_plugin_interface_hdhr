@@ -6,57 +6,28 @@ class Auto():
     endpoints = ['/auto/<channel>', '/hdhr/auto/<channel>']
     endpoint_name = "hdhr_auto"
 
-    def __init__(self, fhdhr):
+    def __init__(self, fhdhr, plugin_utils):
         self.fhdhr = fhdhr
+        self.plugin_utils = plugin_utils
+        self.interface = self.fhdhr.device.interfaces[self.plugin_utils.namespace]
 
     def __call__(self, channel, *args):
         return self.get(channel, *args)
 
-    @property
-    def source(self):
-        if self.fhdhr.config.dict["hdhr"]["source"]:
-            return self.fhdhr.config.dict["hdhr"]["source"]
-        elif len(self.fhdhr.origins.valid_origins):
-            return self.fhdhr.origins.valid_origins[0]
-        else:
-            return None
-
     def get(self, channel, *args):
 
-        if self.source in self.fhdhr.origins.valid_origins:
-
-            redirect_url = "/api/tuners?method=stream"
-
-            if channel.startswith("v"):
-                channel_number = channel.replace('v', '')
-            elif channel.startswith("ch"):
-                channel_freq = channel.replace('ch', '').split("-")[0]
-                subchannel = None
-                if "-" in channel:
-                    subchannel = channel.replace('ch', '').split("-")[1]
-                if subchannel:
-                    self.fhdhr.logger.error("Not Implemented %s-%s" % (channel_freq, subchannel))
-                    abort(501, "Not Implemented %s-%s" % (channel_freq, subchannel))
-                else:
-                    self.fhdhr.logger.error("Not Implemented %s" % (channel_freq, subchannel))
-                    abort(501, "Not Implemented %s" % channel_freq)
-            else:
-                channel_number = channel
-
-            redirect_url += "&channel=%s" % str(channel_number)
-            redirect_url += "&origin=%s" % str(self.source)
-            redirect_url += "&stream_method=%s" % self.fhdhr.origins.origins_dict[self.source].stream_method
+        if self.interface.source in self.fhdhr.origins.valid_origins:
 
             duration = request.args.get('duration', default=0, type=int)
-            if duration:
-                redirect_url += "&duration=%s" % str(duration)
-
             transcode_quality = request.args.get('transcode', default=None, type=str)
-            if transcode_quality:
-                redirect_url += "&transcode=%s" % str(transcode_quality)
+            accessed_url = urllib.parse.quote(request.url)
 
-            redirect_url += "&accessed=%s" % urllib.parse.quote(request.url)
+            channel_number, error = self.interface.channel_number_convert(channel)
+            if error:
+                self.fhdhr.logger.error(error)
+                abort(501, error)
 
+            redirect_url = self.interface.get_tuner_api_url(channel_number, self.interface.source, duration, transcode_quality, accessed_url)
             return redirect(redirect_url)
 
         else:

@@ -9,8 +9,10 @@ class HDHR_Device_XML():
     endpoints = ["/hdhr/<origin>/device.xml"]
     endpoint_name = "hdhr_device_xml_origin"
 
-    def __init__(self, fhdhr):
+    def __init__(self, fhdhr, plugin_utils):
         self.fhdhr = fhdhr
+        self.plugin_utils = plugin_utils
+        self.interface = self.fhdhr.device.interfaces[self.plugin_utils.namespace]
 
         self.schema = "urn:schemas-upnp-org:device:MediaServer:1"
 
