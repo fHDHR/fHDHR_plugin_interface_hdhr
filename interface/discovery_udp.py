@@ -2,6 +2,7 @@ import threading
 import socket
 import struct
 import zlib
+from io import StringIO
 
 
 HDHOMERUN_DISCOVER_UDP_PORT = 65001
@@ -62,11 +63,61 @@ class HDHR_UDP_Discovery_Service():
                 self.fhdhr.logger.ssdp("Discovery request received from %s" % str(client))
 
                 for origin in self.plugin_utils.origins.valid_origins:
-                    responsePacket = self.create_responsePacket(origin)
+                    responsePacket = self.discover_responsePacket(origin)
                     if responsePacket:
                         self.fhdhr.logger.ssdp("Sending %s discovery reply over udp to %s" % (origin, str(client)))
                         self.sock.sendto(responsePacket, client)
+
+            elif packetType == HDHOMERUN_TYPE_GETSET_REQ:
+                self.fhdhr.logger.ssdp('Get set request received from ' + client[0])
+                responsePacket = self.getset_responsePacket(origin, requestPayload)
+                if responsePacket:
+                    self.sock.sendto(responsePacket, client)
+
+            elif packetType == HDHOMERUN_TYPE_DISCOVER_RPY:
+                self.fhdhr.logger.ssdp("RPY from %s" % str(client))
+
+            else:
+                self.fhdhr.logger.ssdp("Unknown packet type %s" % str(packetType))
+
         self.sock.close()
+
+    def getset_responsePacket(self, requestPayload):
+        getSetName = None
+        getSetValue = None
+        payloadIO = StringIO(requestPayload)
+        while True:
+
+            header = payloadIO.read(2)
+            if not header:
+                break
+
+            tag, length = struct.unpack('>BB', header)
+
+            # TODO: If the length is larger than 127 the following bit is also needed to determine length
+            if length > 127:
+                self.fhdhr.logger.ssdp('Unable to determine tag length, the correct way to determine a length larger than 127 must still be implemented.')
+                return None
+
+            # TODO: Implement other tags
+            if tag == HDHOMERUN_TAG_GETSET_NAME:
+                getSetName = struct.unpack('>{0}s'.format(
+                    length), payloadIO.read(length))[0]
+            if tag == HDHOMERUN_TAG_GETSET_VALUE:
+                getSetValue = struct.unpack('>{0}s'.format(
+                    length), payloadIO.read(length))[0]
+
+        if getSetName is None:
+            return False
+        else:
+            responsePayload = struct.pack('>BB{0}s'.format(
+                len(getSetName)), HDHOMERUN_TAG_GETSET_NAME, len(getSetName), getSetName)
+
+            if getSetValue is not None:
+                responsePayload += struct.pack('>BB{0}s'.format(
+                    len(getSetValue)), HDHOMERUN_TAG_GETSET_VALUE, len(getSetValue), getSetValue)
+
+            return self.createPacket(HDHOMERUN_TYPE_GETSET_RPY, responsePayload)
 
     def format_packet(self, data):
         return " ".join(["{:02x}".format(x) for x in data])
@@ -82,7 +133,7 @@ class HDHR_UDP_Discovery_Service():
         self.fhdhr.logger.ssdp("Response: %s" % str(self.format_packet(packet)))
         return packet
 
-    def create_responsePacket(self, origin):
+    def discover_responsePacket(self, origin):
         BaseUrl = "%s:%s/hdhr/%s" % (self.hdhr_discovery_address, self.fhdhr.api.port, origin)
         uid = self.interface.get_origin_uid(origin)
         device_id = int(uid[:8], 16)  # Hex string to int
