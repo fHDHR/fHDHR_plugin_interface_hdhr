@@ -1,3 +1,7 @@
+import os
+import uuid
+
+from .discovery_udp import HDHR_UDP_Discovery_Service
 
 
 from fHDHR.tools import isint, isfloat, channel_sort
@@ -9,6 +13,28 @@ class Plugin_OBJ():
     def __init__(self, fhdhr, plugin_utils):
         self.fhdhr = fhdhr
         self.plugin_utils = plugin_utils
+        self.generate_or_load_uid()
+
+        self.udp_discover = HDHR_UDP_Discovery_Service(fhdhr, plugin_utils, self)
+
+    def run_thread(self):
+        if "hdhr_discovery" in list(self.fhdhr.threads.keys()):
+            self.fhdhr.threads["hdhr_discovery"].start()
+
+    def generate_or_load_uid(self):
+        uid_file = os.path.join(self.plugin_utils.config.internal["paths"]["cache_dir"], 'hdhr_uid')
+        if os.path.exists(uid_file):
+            with open(uid_file, "r") as f:
+                self.base_uid = f.readline().rstrip()
+            self.fhdhr.logger.info("Loaded HDHR Base UID: %s" % self.base_uid)
+        else:
+            self.base_uid = str(uuid.uuid1())
+            with open(uid_file, "w") as f:
+                f.write(str(self.base_uid))
+                self.fhdhr.logger.info("Generated HDHR Base UID: %s" % self.base_uid)
+
+    def get_origin_uid(self, origin):
+        return str(uuid.uuid5(uuid.UUID(self.base_uid), str(origin)))
 
     @property
     def source(self):
@@ -18,6 +44,36 @@ class Plugin_OBJ():
             return self.plugin_utils.origins.valid_origins[0]
         else:
             return None
+
+    def get_DeviceID(self, origin):
+        uid = self.get_origin_uid(origin)
+        device_id = int(uid[:8], 16)  # Hex string to int
+        valid_id = device_id + self.device_id_checksum(device_id)
+        return hex(valid_id)[2:]
+
+    def device_id_checksum(self, device_id):
+        """Generate a HDHomerun checksum for a device ID.
+        HDHomerun considers a device to be valid if the checksum
+        is 0. Adding the checksum to the device ID will
+        provide a valid checksum though.
+        Args:
+            device_id (int): Device ID
+        Returns:
+            int: Checksum of the device id.
+        """
+        lookup_table = [0xA, 0x5, 0xF, 0x6, 0x7, 0xC, 0x1,
+                        0xB, 0x9, 0x2, 0x8, 0xD, 0x4, 0x3, 0xE, 0x0]
+        checksum = 0
+        checksum ^= lookup_table[(device_id >> 28) & 0x0F]
+        checksum ^= (device_id >> 24) & 0x0F
+        checksum ^= lookup_table[(device_id >> 20) & 0x0F]
+        checksum ^= (device_id >> 16) & 0x0F
+        checksum ^= lookup_table[(device_id >> 12) & 0x0F]
+        checksum ^= (device_id >> 8) & 0x0F
+        checksum ^= lookup_table[(device_id >> 4) & 0x0F]
+        checksum ^= (device_id >> 0) & 0x0F
+
+        return checksum
 
     def channel_number_convert(self, channel):
 
@@ -99,7 +155,7 @@ class Plugin_OBJ():
                             "FirmwareName": self.plugin_utils.config.dict["hdhr"]["reporting_firmware_name"],
                             "TunerCount": self.plugin_utils.origins.origins_dict[origin].tuners,
                             "FirmwareVersion": self.plugin_utils.config.dict["hdhr"]["reporting_firmware_ver"],
-                            "DeviceID": "%s%s" % (self.plugin_utils.config.dict["main"]["uuid"], origin),
+                            "DeviceID": self.get_DeviceID(origin),
                             "DeviceAuth": self.plugin_utils.config.dict["fhdhr"]["device_auth"],
                             "BaseURL": "%s/hdhr/%s" % (base_url, origin),
                             "LineupURL": "%s/hdhr/%s/lineup.json" % (base_url, origin)
