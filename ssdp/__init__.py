@@ -4,11 +4,13 @@ class Plugin_OBJ():
 
     def __init__(self, fhdhr, plugin_utils, broadcast_ip, max_age):
         self.fhdhr = fhdhr
+        self.interface = self.fhdhr.device.interfaces[self.plugin_utils.namespace]
 
         self.broadcast_ip = broadcast_ip
         self.device_xml_path = '/hdhr/device.xml'
 
-        self.schema = "urn:schemas-upnp-org:device:MediaServer:1"
+        # self.schema = "urn:schemas-upnp-org:device:MediaServer:1"
+        self.schema = "upnp:rootdevice"
 
         self.max_age = max_age
 
@@ -25,8 +27,9 @@ class Plugin_OBJ():
         data_dict = {
                     "HOST": "%s:%s" % ("239.255.255.250", 1900),
                     "NT": self.schema,
+                    "ST": self.schema,
                     "NTS": "ssdp:alive",
-                    "USN": 'uuid:%s%s::%s' % (self.fhdhr.config.dict["main"]["uuid"], origin, self.schema),
+                    "USN": 'uuid:%s::%s' % (self.interface.get_DeviceID(origin), self.schema),
                     "SERVER": 'fHDHR/%s UPnP/1.0' % self.fhdhr.version,
                     "LOCATION": "%s%s" % (self.fhdhr.api.base, device_xml_path),
                     "AL": "%s%s" % (self.fhdhr.api.base, device_xml_path),
