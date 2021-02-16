@@ -39,12 +39,6 @@
                           "value": true,
                           "config_file": true,
                           "config_web": true
-                        },
-            "discovery_address":{
-                      "value": "none",
-                      "config_file": true,
-                      "config_web": true,
-                      "description": "Determines the Address used by HDHR Discovery, if not set, fHDHR will use the discovery address, or SSDP multicast address, if not set."
-                      }
+                        }
   }
 }
