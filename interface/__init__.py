@@ -1,6 +1,8 @@
 import os
 import uuid
 
+from .discovery_udp import HDHR_UDP_Discovery_Service
+
 
 from fHDHR.tools import isint, isfloat, channel_sort
 from fHDHR.exceptions import TunerError
@@ -12,6 +14,12 @@ class Plugin_OBJ():
         self.fhdhr = fhdhr
         self.plugin_utils = plugin_utils
         self.generate_or_load_uid()
+
+        self.udp_discover = HDHR_UDP_Discovery_Service(fhdhr, plugin_utils, self)
+
+    def run_thread(self):
+        if "hdhr_discovery" in list(self.fhdhr.threads.keys()):
+            self.fhdhr.threads["hdhr_discovery"].start()
 
     def generate_or_load_uid(self):
         uid_file = os.path.join(self.plugin_utils.config.internal["paths"]["cache_dir"], 'hdhr_uid')
