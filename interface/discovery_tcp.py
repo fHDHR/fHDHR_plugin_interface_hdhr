@@ -17,8 +17,9 @@ class HDHR_Discovery_Service_TCP():
 
         if self.fhdhr.config.dict["hdhr"]["discovery"]:
             self.fhdhr.logger.info("Initializing HDHR TCP Discovery system")
-            self.fhdhr.threads["hdhr_tcp_discovery"] = threading.Thread(target=self.discovery_service_listen)
-            self.setup_discovery()
+            setup_success = self.setup_discovery()
+            if setup_success:
+                self.fhdhr.threads["hdhr_tcp_discovery"] = threading.Thread(target=self.discovery_service_listen)
 
         else:
             self.fhdhr.logger.info("HDHR TCP Discovery system will not be Initialized: Not Enabled")
@@ -64,5 +65,10 @@ class HDHR_Discovery_Service_TCP():
         self.sock.close()
 
     def setup_discovery(self):
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.bind(("0.0.0.0", HDHOMERUN_CONTROL_TCP_PORT))
+        try:
+            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.sock.bind(("0.0.0.0", HDHOMERUN_CONTROL_TCP_PORT))
+        except Exception as e:
+            self.fhdhr.logger.error("Error Setting Up socket %s" % str(e))
+            return False
+        return True
