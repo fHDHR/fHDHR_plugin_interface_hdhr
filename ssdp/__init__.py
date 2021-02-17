@@ -4,7 +4,6 @@ class Plugin_OBJ():
 
     def __init__(self, fhdhr, plugin_utils, broadcast_ip, max_age):
         self.fhdhr = fhdhr
-        self.interface = self.fhdhr.device.interfaces[self.plugin_utils.namespace]
 
         self.broadcast_ip = broadcast_ip
         self.device_xml_path = '/hdhr/device.xml'
@@ -13,6 +12,10 @@ class Plugin_OBJ():
         self.schema = "upnp:rootdevice"
 
         self.max_age = max_age
+
+    @property
+    def interface(self):
+        return self.fhdhr.device.interfaces[self.plugin_utils.namespace]
 
     @property
     def enabled(self):
