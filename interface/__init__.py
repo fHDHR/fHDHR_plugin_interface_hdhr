@@ -16,8 +16,10 @@ class Plugin_OBJ():
         self.plugin_utils = plugin_utils
         self.generate_or_load_uid()
 
-        self.discover_udp = HDHR_Discovery_Service_UDP(fhdhr, plugin_utils, self)
-        self.discover_tcp = HDHR_Discovery_Service_TCP(fhdhr, plugin_utils, self)
+        if str(self.fhdhr.config.dict["hdhr"]["discovery_mode"]).lower() == "udp":
+            self.discover_udp = HDHR_Discovery_Service_UDP(fhdhr, plugin_utils, self)
+        elif str(self.fhdhr.config.dict["hdhr"]["discovery_mode"]).lower() == "tcp":
+            self.discover_tcp = HDHR_Discovery_Service_TCP(fhdhr, plugin_utils, self)
 
     def run_thread(self):
         if "hdhr_udp_discovery" in list(self.fhdhr.threads.keys()):

@@ -36,9 +36,16 @@
                                       "config_web": true
                                     },
             "discovery":{
-                          "value": true,
+                          "value": false,
                           "config_file": true,
                           "config_web": true
-                        }
+                        },
+            "discovery_mode":{
+                      "value": "tcp",
+                      "config_file": true,
+                      "config_web": true,
+                      "description": "Determines the Mode used by HDHR Discovery. TCP/UDP"
+                      }
+
   }
 }
