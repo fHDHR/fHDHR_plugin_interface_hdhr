@@ -17,8 +17,9 @@ class HDHR_Discovery_Service_UDP():
 
         if self.fhdhr.config.dict["hdhr"]["discovery"]:
             self.fhdhr.logger.info("Initializing HDHR UDP Discovery system")
-            self.fhdhr.threads["hdhr_udp_discovery"] = threading.Thread(target=self.discovery_service_listen)
-            self.setup_discovery()
+            setup_success = self.setup_discovery()
+            if setup_success:
+                self.fhdhr.threads["hdhr_udp_discovery"] = threading.Thread(target=self.discovery_service_listen)
 
         else:
             self.fhdhr.logger.info("HDHR UDP Discovery system will not be Initialized: Not Enabled")
@@ -59,6 +60,11 @@ class HDHR_Discovery_Service_UDP():
         self.sock.close()
 
     def setup_discovery(self):
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        self.sock.bind(('0.0.0.0', HDHOMERUN_DISCOVER_UDP_PORT))
+        try:
+            self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            self.sock.bind(('0.0.0.0', HDHOMERUN_DISCOVER_UDP_PORT))
+        except Exception as e:
+            self.fhdhr.logger.error("Error Setting Up socket %s" % str(e))
+            return False
+        return True
