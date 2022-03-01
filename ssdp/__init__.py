@@ -11,15 +11,13 @@ class Plugin_OBJ():
         # self.schema = "urn:schemas-upnp-org:device:MediaServer:1"
         self.schema = "upnp:rootdevice"
 
-        self.max_age = max_age
+    @property
+    def max_age(self):
+        return self.fhdhr.config.dict["hdhr"]["ssdp_max_age"]
 
     @property
     def interface(self):
         return self.fhdhr.device.interfaces[self.plugin_utils.namespace]
-
-    @property
-    def enabled(self):
-        return self.fhdhr.config.dict["hdhr"]["enabled"]
 
     def create_ssdp_content(self, origin):
         data = ''
