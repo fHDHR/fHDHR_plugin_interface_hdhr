@@ -17,7 +17,7 @@ class Lineup_Status_JSON_Origin():
     def get(self, origin, *args):
 
         jsonlineup = {}
-        if origin in self.fhdhr.origins.valid_origins:
+        if origin in self.fhdhr.origins.list_origins:
             jsonlineup = self.interface.lineup_status(self.interface.source)
 
         return Response(status=200,

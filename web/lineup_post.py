@@ -16,7 +16,7 @@ class Lineup_Post():
 
     def get(self, *args):
 
-        if self.interface.source in self.fhdhr.origins.valid_origins:
+        if self.interface.source in self.fhdhr.origins.list_origins:
 
             if 'scan' in list(request.args.keys()):
 

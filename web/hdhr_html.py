@@ -25,7 +25,7 @@ class HDHR_HTML():
 
         base_url = request.url_root[:-1]
         origin_dict_list = []
-        for origin in self.fhdhr.origins.valid_origins:
+        for origin in self.fhdhr.origins.list_origins:
             origin_dict_list.append({
                                     "name": origin,
                                     "url": "%s/hdhr/%s" % (base_url, origin)

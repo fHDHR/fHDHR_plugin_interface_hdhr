@@ -39,7 +39,7 @@ class HDHR_Discovery_Service_UDP():
             if packetType == HDHOMERUN_TYPE_DISCOVER_REQ:
                 self.fhdhr.logger.ssdp("Discovery request received from %s" % str(client))
 
-                for origin in self.plugin_utils.origins.valid_origins:
+                for origin in self.plugin_utils.origins.list_origins:
                     responsePacket = self.discovery_shared.discover_responsePacket(origin)
                     if responsePacket:
                         self.fhdhr.logger.ssdp("Sending %s discovery reply over udp to %s" % (origin, str(client)))

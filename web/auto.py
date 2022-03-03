@@ -16,7 +16,7 @@ class Auto():
 
     def get(self, channel, *args):
 
-        if self.interface.source in self.fhdhr.origins.valid_origins:
+        if self.interface.source in self.fhdhr.origins.list_origins:
 
             duration = request.args.get('duration', default=0, type=int)
             transcode_quality = request.args.get('transcode', default=None, type=str)

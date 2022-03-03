@@ -47,7 +47,7 @@ class Plugin_OBJ():
     @property
     def notify(self):
         ssdp_content = []
-        for origin in self.fhdhr.origins.valid_origins:
+        for origin in self.fhdhr.origins.list_origins:
             data = self.create_ssdp_content(origin)
             ssdp_content.append(data)
         return ssdp_content
