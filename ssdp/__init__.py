@@ -2,10 +2,9 @@
 
 class Plugin_OBJ():
 
-    def __init__(self, fhdhr, plugin_utils, broadcast_ip, max_age):
+    def __init__(self, fhdhr, plugin_utils):
         self.fhdhr = fhdhr
 
-        self.broadcast_ip = broadcast_ip
         self.device_xml_path = '/hdhr/device.xml'
 
         # self.schema = "urn:schemas-upnp-org:device:MediaServer:1"
