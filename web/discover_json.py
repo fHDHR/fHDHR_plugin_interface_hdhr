@@ -19,7 +19,7 @@ class Discover_JSON():
         base_url = request.url_root[:-1]
 
         origindiscover = {}
-        if self.interface.source in self.fhdhr.origins.valid_origins:
+        if self.interface.source in self.fhdhr.origins.list_origins:
             origindiscover = self.interface.get_discover_dict(self.interface.source, base_url)
 
         return Response(status=200,

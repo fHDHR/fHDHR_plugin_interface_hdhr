@@ -89,7 +89,7 @@ class HDHR_Discovery_Service_Shared():
         BaseUrl = "%s/hdhr/%s" % (self.fhdhr.api.base, origin)
         uid = self.interface.get_origin_uid(origin)
         device_id = int(uid[:8], 16)  # Hex string to int
-        tuner_count = self.plugin_utils.origins.origins_dict[origin].tuners
+        tuner_count = self.plugin_utils.origins.get_origin_property(origin, "tuners")
 
         responsePayload = b''.join([
             self.createUIntTag(HDHOMERUN_TAG_DEVICE_TYPE,

@@ -21,7 +21,7 @@ class Lineup_JSON_Origin():
         show = request.args.get('show', default="all", type=str)
 
         chan_guide = []
-        if origin in self.fhdhr.origins.valid_origins:
+        if origin in self.fhdhr.origins.list_origins:
             chan_guide = self.interface.get_channel_lineup(origin, base_url, show)
 
         lineup_json = json.dumps(chan_guide, indent=4)

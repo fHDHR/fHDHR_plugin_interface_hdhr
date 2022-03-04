@@ -27,10 +27,11 @@ class HDHR_Device_XML():
         out = xml.etree.ElementTree.Element('root')
         out.set('xmlns', "urn:schemas-upnp-org:device-1-0")
 
-        if origin in self.fhdhr.origins.valid_origins:
+        if origin in self.fhdhr.origins.list_origins:
+            origin_obj = self.fhdhr.origins.get_origin(origin)
 
-            origin_plugin_name = self.fhdhr.origins.origins_dict[origin].plugin_utils.plugin_name
-            origin_plugin_version = self.fhdhr.origins.origins_dict[origin].plugin_utils.plugin_manifest["version"]
+            origin_plugin_name = origin_obj.plugin_utils.plugin_name
+            origin_plugin_version = origin_obj.plugin_utils.plugin_manifest["version"]
 
             sub_el(out, 'URLBase', "%s/hdhr/%s" % (base_url, origin))
 
