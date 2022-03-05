@@ -159,7 +159,7 @@ class Plugin_OBJ():
                             "Manufacturer": self.plugin_utils.config.dict["hdhr"]["reporting_manufacturer"],
                             "ModelNumber": self.plugin_utils.config.dict["hdhr"]["reporting_model"],
                             "FirmwareName": self.plugin_utils.config.dict["hdhr"]["reporting_firmware_name"],
-                            "TunerCount": self.plugin_utils.get_origin_property(origin, "tuners"),
+                            "TunerCount": self.plugin_utils.origins.get_origin_property(origin, "tuners"),
                             "FirmwareVersion": self.plugin_utils.config.dict["hdhr"]["reporting_firmware_ver"],
                             "DeviceID": self.get_DeviceID(origin),
                             "DeviceAuth": self.plugin_utils.config.dict["fhdhr"]["device_auth"],
