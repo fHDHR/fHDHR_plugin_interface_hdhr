@@ -124,8 +124,8 @@ class Plugin_OBJ():
         chan_guide = []
 
         channelslist = {}
-        for fhdhr_id in self.plugin_utils.origins[origin].list_channel_ids:
-            channel_obj = self.plugin_utils.origins[origin].get_channel_obj("id", fhdhr_id)
+        for fhdhr_id in self.plugin_utils.origins.origins_dict[origin].list_channel_ids:
+            channel_obj = self.plugin_utils.origins.origins_dict[origin].get_channel_obj("id", fhdhr_id)
             if channel_obj:
                 if channel_obj.enabled:
                     channelslist[channel_obj.number] = channel_obj
@@ -159,7 +159,7 @@ class Plugin_OBJ():
                             "Manufacturer": self.plugin_utils.config.dict["hdhr"]["reporting_manufacturer"],
                             "ModelNumber": self.plugin_utils.config.dict["hdhr"]["reporting_model"],
                             "FirmwareName": self.plugin_utils.config.dict["hdhr"]["reporting_firmware_name"],
-                            "TunerCount": self.plugin_utils.get_origin_property(origin, "tuners"),
+                            "TunerCount": self.plugin_utils.origins.get_origin_property(origin, "tuners"),
                             "FirmwareVersion": self.plugin_utils.config.dict["hdhr"]["reporting_firmware_ver"],
                             "DeviceID": self.get_DeviceID(origin),
                             "DeviceAuth": self.plugin_utils.config.dict["fhdhr"]["device_auth"],
