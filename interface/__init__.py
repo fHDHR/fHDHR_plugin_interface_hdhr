@@ -124,8 +124,8 @@ class Plugin_OBJ():
         chan_guide = []
 
         channelslist = {}
-        for fhdhr_id in self.plugin_utils.origins.origins_dict[origin].list_channel_ids:
-            channel_obj = self.plugin_utils.origins.origins_dict[origin].get_channel_obj("id", fhdhr_id)
+        for fhdhr_channel_id in self.plugin_utils.origins.origins_dict[origin].list_channel_ids:
+            channel_obj = self.plugin_utils.origins.origins_dict[origin].get_channel_obj("id", fhdhr_channel_id)
             if channel_obj:
                 if channel_obj.enabled:
                     channelslist[channel_obj.number] = channel_obj

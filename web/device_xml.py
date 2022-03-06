@@ -28,7 +28,7 @@ class HDHR_Device_XML():
         out.set('xmlns', "urn:schemas-upnp-org:device-1-0")
 
         if origin in self.fhdhr.origins.list_origins:
-            origin_obj = self.fhdhr.origins.get_origin(origin)
+            origin_obj = self.fhdhr.origins.get_origin_obj(origin)
 
             origin_plugin_name = origin_obj.plugin_utils.plugin_name
             origin_plugin_version = origin_obj.plugin_utils.plugin_manifest["version"]
