@@ -39,8 +39,8 @@ class Plugin_OBJ():
                 f.write(str(self.base_uid))
                 self.fhdhr.logger.info("Generated HDHR Base UID: %s" % self.base_uid)
 
-    def get_origin_uid(self, origin):
-        return str(uuid.uuid5(uuid.UUID(self.base_uid), str(origin)))
+    def get_origin_uid(self, origin_name):
+        return str(uuid.uuid5(uuid.UUID(self.base_uid), str(origin_name)))
 
     @property
     def source(self):
@@ -51,8 +51,8 @@ class Plugin_OBJ():
         else:
             return None
 
-    def get_DeviceID(self, origin):
-        uid = self.get_origin_uid(origin)
+    def get_DeviceID(self, origin_name):
+        uid = self.get_origin_uid(origin_name)
         device_id = int(uid[:8], 16)  # Hex string to int
         valid_id = device_id + self.device_id_checksum(device_id)
         return hex(valid_id)[2:]
@@ -99,7 +99,7 @@ class Plugin_OBJ():
         else:
             return None, ("Invalid Channel %s" % channel)
 
-    def get_tuner_api_url(self, channel_number, origin, duration, transcode_quality, accessed_url, tuner_number=None):
+    def get_tuner_api_url(self, channel_number, origin_name, duration, transcode_quality, accessed_url, tuner_number=None):
 
         redirect_url = "/api/tuners?method=stream"
 
@@ -107,8 +107,8 @@ class Plugin_OBJ():
             redirect_url += "&tuner=%s" % (tuner_number)
 
         redirect_url += "&channel=%s" % channel_number
-        redirect_url += "&origin=%s" % origin
-        redirect_url += "&stream_method=%s" % self.plugin_utils.origins.get_origin_property(origin, "stream_method")
+        redirect_url += "&origin=%s" % origin_name
+        redirect_url += "&stream_method=%s" % self.plugin_utils.origins.get_origin_property(origin_name, "stream_method")
 
         if duration:
             redirect_url += "&duration=%s" % duration
@@ -120,12 +120,12 @@ class Plugin_OBJ():
 
         return redirect_url
 
-    def get_channel_lineup(self, origin, base_url, show):
+    def get_channel_lineup(self, origin_name, base_url, show):
         chan_guide = []
 
         channelslist = {}
-        for fhdhr_channel_id in self.plugin_utils.origins.origins_dict[origin].list_channel_ids:
-            channel_obj = self.plugin_utils.origins.origins_dict[origin].get_channel_obj("id", fhdhr_channel_id)
+        for fhdhr_channel_id in self.plugin_utils.origins.origins_dict[origin_name].list_channel_ids:
+            channel_obj = self.plugin_utils.origins.origins_dict[origin_name].get_channel_obj("id", fhdhr_channel_id)
             if channel_obj:
                 if channel_obj.enabled:
                     channelslist[channel_obj.number] = channel_obj
@@ -139,7 +139,7 @@ class Plugin_OBJ():
                              'GuideNumber': channel_obj.number,
                              'GuideName': channel_obj.dict['name'],
                              'Tags': ",".join(channel_obj.dict['tags']),
-                             'URL': '/hdhr/%s/auto/v%s' % (origin, channel_obj.number),
+                             'URL': '/hdhr/%s/auto/v%s' % (origin_name, channel_obj.number),
                              'HD': channel_obj.dict["HD"],
                              "Favorite": channel_obj.dict["favorite"],
                             }
@@ -153,48 +153,48 @@ class Plugin_OBJ():
 
         return chan_guide
 
-    def get_discover_dict(self, origin, base_url):
+    def get_discover_dict(self, origin_name, base_url):
         origindiscover = {
-                            "FriendlyName": "%s %s" % (self.plugin_utils.config.dict["fhdhr"]["friendlyname"], origin),
+                            "FriendlyName": "%s %s" % (self.plugin_utils.config.dict["fhdhr"]["friendlyname"], origin_name),
                             "Manufacturer": self.plugin_utils.config.dict["hdhr"]["reporting_manufacturer"],
                             "ModelNumber": self.plugin_utils.config.dict["hdhr"]["reporting_model"],
                             "FirmwareName": self.plugin_utils.config.dict["hdhr"]["reporting_firmware_name"],
-                            "TunerCount": self.plugin_utils.origins.get_origin_property(origin, "tuners"),
+                            "TunerCount": self.plugin_utils.origins.get_origin_property(origin_name, "tuners"),
                             "FirmwareVersion": self.plugin_utils.config.dict["hdhr"]["reporting_firmware_ver"],
-                            "DeviceID": self.get_DeviceID(origin),
+                            "DeviceID": self.get_DeviceID(origin_name),
                             "DeviceAuth": self.plugin_utils.config.dict["fhdhr"]["device_auth"],
-                            "BaseURL": "%s/hdhr/%s" % (base_url, origin),
-                            "LineupURL": "%s/hdhr/%s/lineup.json" % (base_url, origin)
+                            "BaseURL": "%s/hdhr/%s" % (base_url, origin_name),
+                            "LineupURL": "%s/hdhr/%s/lineup.json" % (base_url, origin_name)
                         }
         return origindiscover
 
-    def lineup_post_scan_start(self, origin):
+    def lineup_post_scan_start(self, origin_name):
         try:
-            self.plugin_utils.tuners.tuner_scan(origin)
+            self.plugin_utils.tuners.tuner_scan(origin_name)
         except TunerError as e:
             self.plugin_utils.logger.info(str(e))
 
-    def lineup_post_scan_abort(self, origin):
-        self.plugin_utils.tuners.stop_tuner_scan(origin)
+    def lineup_post_scan_abort(self, origin_name):
+        self.plugin_utils.tuners.stop_tuner_scan(origin_name)
 
-    def lineup_post_favorite(self, origin, favorite):
+    def lineup_post_favorite(self, origin_name, favorite):
         channel_method = favorite['favorite'][0]
         channel_number = favorite['favorite'][1:]
 
-        if str(channel_number) not in [str(x) for x in self.plugin_utils.origins.origins_dict[origin].channels.create_channel_list("number")]:
+        if str(channel_number) not in [str(x) for x in self.plugin_utils.origins.origins_dict[origin_name].channels.create_channel_list("number")]:
             return "801 - Unknown Channel"
 
         if channel_method == "+":
-            self.plugin_utils.origins.origins_dict[origin].channels.set_channel_enablement(channel_number, channel_method, "number")
+            self.plugin_utils.origins.origins_dict[origin_name].channels.set_channel_enablement(channel_number, channel_method, "number")
         elif channel_method == "-":
-            self.plugin_utils.origins.origins_dict[origin].channels.set_channel_enablement(channel_number, channel_method, "number")
+            self.plugin_utils.origins.origins_dict[origin_name].channels.set_channel_enablement(channel_number, channel_method, "number")
         elif channel_method == "x":
-            self.plugin_utils.origins.origins_dict[origin].channels.set_channel_enablement(channel_number, "toggle", "number")
+            self.plugin_utils.origins.origins_dict[origin_name].channels.set_channel_enablement(channel_number, "toggle", "number")
 
         return None
 
-    def lineup_status(self, origin):
-        tuner_status = self.plugin_utils.tuners.status(origin)
+    def lineup_status(self, origin_name):
+        tuner_status = self.plugin_utils.tuners.status(origin_name)
 
         tuners_scanning = 0
         for tuner_number in list(tuner_status.keys()):
@@ -202,17 +202,17 @@ class Plugin_OBJ():
                 tuners_scanning += 1
 
         if tuners_scanning:
-            jsonlineup = self.scan_in_progress(origin)
+            jsonlineup = self.scan_in_progress(origin_name)
         else:
             jsonlineup = self.not_scanning()
 
         return jsonlineup
 
-    def scan_in_progress(self, origin):
+    def scan_in_progress(self, origin_name):
         jsonlineup = {
                       "ScanInProgress": "true",
                       "Progress": 99,
-                      "Found": self.plugin_utils.origins.origins_dict[origin].channels.count_channels
+                      "Found": self.plugin_utils.origins.origins_dict[origin_name].channels.count_channels
                       }
         return jsonlineup
 

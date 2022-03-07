@@ -12,19 +12,20 @@ class Lineup_Post_Origin():
         self.interface = self.fhdhr.device.interfaces[self.plugin_utils.namespace]
 
     def __call__(self, origin, *args):
-        return self.get(origin, *args)
+        origin_name = origin
+        return self.get(origin_name, *args)
 
-    def get(self, origin, *args):
+    def get(self, origin_name, *args):
 
-        if origin in self.fhdhr.origins.list_origins:
+        if origin_name in self.fhdhr.origins.list_origins:
 
             if 'scan' in list(request.args.keys()):
 
                 if request.args['scan'] == 'start':
-                    self.interface.lineup_post_scan_start(origin)
+                    self.interface.lineup_post_scan_start(origin_name)
 
                 elif request.args['scan'] == 'abort':
-                    self.interface.lineup_post_scan_abort(origin)
+                    self.interface.lineup_post_scan_abort(origin_name)
 
                 else:
                     self.fhdhr.logger.warning("Unknown scan command %s" % request.args['scan'])
@@ -33,7 +34,7 @@ class Lineup_Post_Origin():
             elif 'favorite' in list(request.args.keys()):
                 if request.args['favorite'].startstwith(tuple(["+", "-", "x"])):
 
-                    error = self.interface.lineup_post_favorite(origin, request.args['favorite'])
+                    error = self.interface.lineup_post_favorite(origin_name, request.args['favorite'])
                     if error:
                         response = Response("Not Found", status=404)
                         response.headers["X-fHDHR-Error"] = error

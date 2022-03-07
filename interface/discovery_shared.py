@@ -85,11 +85,11 @@ class HDHR_Discovery_Service_Shared():
         self.fhdhr.logger.ssdp("Response: %s" % str(self.format_packet(packet)))
         return packet
 
-    def discover_responsePacket(self, origin):
-        BaseUrl = "%s/hdhr/%s" % (self.fhdhr.api.base, origin)
-        uid = self.interface.get_origin_uid(origin)
+    def discover_responsePacket(self, origin_name):
+        BaseUrl = "%s/hdhr/%s" % (self.fhdhr.api.base, origin_name)
+        uid = self.interface.get_origin_uid(origin_name)
         device_id = int(uid[:8], 16)  # Hex string to int
-        tuner_count = self.plugin_utils.origins.get_origin_property(origin, "tuners")
+        tuner_count = self.plugin_utils.origins.get_origin_property(origin_name, "tuners")
 
         responsePayload = b''.join([
             self.createUIntTag(HDHOMERUN_TAG_DEVICE_TYPE,

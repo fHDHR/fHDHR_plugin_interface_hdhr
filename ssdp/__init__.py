@@ -18,18 +18,18 @@ class Plugin_OBJ():
     def interface(self):
         return self.fhdhr.device.interfaces[self.plugin_utils.namespace]
 
-    def create_ssdp_content(self, origin):
+    def create_ssdp_content(self, origin_name):
         data = ''
         data_command = "NOTIFY * HTTP/1.1"
 
-        device_xml_path = "/hdhr/%s/device.xml" % origin
+        device_xml_path = "/hdhr/%s/device.xml" % origin_name
 
         data_dict = {
                     "HOST": "%s:%s" % ("239.255.255.250", 1900),
                     "NT": self.schema,
                     "ST": self.schema,
                     "NTS": "ssdp:alive",
-                    "USN": 'uuid:%s::%s' % (self.interface.get_DeviceID(origin), self.schema),
+                    "USN": 'uuid:%s::%s' % (self.interface.get_DeviceID(origin_name), self.schema),
                     "SERVER": 'fHDHR/%s UPnP/1.0' % self.fhdhr.version,
                     "LOCATION": "%s%s" % (self.fhdhr.api.base, device_xml_path),
                     "AL": "%s%s" % (self.fhdhr.api.base, device_xml_path),
@@ -46,7 +46,7 @@ class Plugin_OBJ():
     @property
     def notify(self):
         ssdp_content = []
-        for origin in self.fhdhr.origins.list_origins:
-            data = self.create_ssdp_content(origin)
+        for origin_name in self.fhdhr.origins.list_origins:
+            data = self.create_ssdp_content(origin_name)
             ssdp_content.append(data)
         return ssdp_content

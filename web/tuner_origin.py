@@ -12,11 +12,12 @@ class Tuner_Origin():
         self.interface = self.fhdhr.device.interfaces[self.plugin_utils.namespace]
 
     def __call__(self, origin, tuner_number, channel, *args):
-        return self.get(origin, tuner_number, channel, *args)
+        origin_name = origin
+        return self.get(origin_name, tuner_number, channel, *args)
 
-    def get(self, origin, tuner_number, channel, *args):
+    def get(self, origin_name, tuner_number, channel, *args):
 
-        if origin in self.fhdhr.origins.list_origins:
+        if origin_name in self.fhdhr.origins.list_origins:
 
             duration = request.args.get('duration', default=0, type=int)
             transcode_quality = request.args.get('transcode', default=None, type=str)
@@ -27,7 +28,7 @@ class Tuner_Origin():
                 self.fhdhr.logger.error(error)
                 abort(501, error)
 
-            redirect_url = self.interface.get_tuner_api_url(channel_number, origin, duration, transcode_quality, accessed_url, tuner_number)
+            redirect_url = self.interface.get_tuner_api_url(channel_number, origin_name, duration, transcode_quality, accessed_url, tuner_number)
             return redirect(redirect_url)
 
         else:

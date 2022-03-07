@@ -25,10 +25,10 @@ class HDHR_HTML():
 
         base_url = request.url_root[:-1]
         origin_dict_list = []
-        for origin in self.fhdhr.origins.list_origins:
+        for origin_name in self.fhdhr.origins.list_origins:
             origin_dict_list.append({
-                                    "name": origin,
-                                    "url": "%s/hdhr/%s" % (base_url, origin)
+                                    "name": origin_name,
+                                    "url": "%s/hdhr/%s" % (base_url, origin_name)
                                     })
 
         return render_template_string(self.template.getvalue(), request=request, session=session, fhdhr=self.fhdhr, origin_dict_list=origin_dict_list)
