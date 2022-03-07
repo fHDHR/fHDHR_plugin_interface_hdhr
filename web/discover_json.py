@@ -12,9 +12,9 @@ class Discover_JSON():
         self.interface = self.fhdhr.device.interfaces[self.plugin_utils.namespace]
 
     def __call__(self, *args):
-        return self.get(*args)
+        return self.handler(*args)
 
-    def get(self, *args):
+    def handler(self, *args):
 
         base_url = request.url_root[:-1]
 

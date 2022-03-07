@@ -19,9 +19,9 @@ class HDHR_HTML():
         self.template.write(open(self.template_file).read())
 
     def __call__(self, *args):
-        return self.get(*args)
+        return self.handler(*args)
 
-    def get(self, *args):
+    def handler(self, *args):
 
         base_url = request.url_root[:-1]
         origin_dict_list = []
