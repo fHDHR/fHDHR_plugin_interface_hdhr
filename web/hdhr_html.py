@@ -19,16 +19,16 @@ class HDHR_HTML():
         self.template.write(open(self.template_file).read())
 
     def __call__(self, *args):
-        return self.get(*args)
+        return self.handler(*args)
 
-    def get(self, *args):
+    def handler(self, *args):
 
         base_url = request.url_root[:-1]
         origin_dict_list = []
-        for origin in self.fhdhr.origins.list_origins:
+        for origin_name in self.fhdhr.origins.list_origins:
             origin_dict_list.append({
-                                    "name": origin,
-                                    "url": "%s/hdhr/%s" % (base_url, origin)
+                                    "name": origin_name,
+                                    "url": "%s/hdhr/%s" % (base_url, origin_name)
                                     })
 
         return render_template_string(self.template.getvalue(), request=request, session=session, fhdhr=self.fhdhr, origin_dict_list=origin_dict_list)

@@ -12,12 +12,13 @@ class Lineup_Status_JSON_Origin():
         self.interface = self.fhdhr.device.interfaces[self.plugin_utils.namespace]
 
     def __call__(self, origin, *args):
-        return self.get(origin, *args)
+        origin_name = origin
+        return self.get(origin_name, *args)
 
-    def get(self, origin, *args):
+    def get(self, origin_name, *args):
 
         jsonlineup = {}
-        if origin in self.fhdhr.origins.list_origins:
+        if origin_name in self.fhdhr.origins.list_origins:
             jsonlineup = self.interface.lineup_status(self.interface.source)
 
         return Response(status=200,

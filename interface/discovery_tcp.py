@@ -42,15 +42,15 @@ class HDHR_Discovery_Service_TCP():
                 if packetType == HDHOMERUN_TYPE_DISCOVER_REQ:
                     self.fhdhr.logger.ssdp("Discovery request received from %s" % str(client))
 
-                    for origin in self.plugin_utils.origins.list_origins:
-                        responsePacket = self.discovery_shared.discover_responsePacket(origin)
+                    for origin_name in self.plugin_utils.origins.list_origins:
+                        responsePacket = self.discovery_shared.discover_responsePacket(origin_name)
                         if responsePacket:
-                            self.fhdhr.logger.ssdp("Sending %s discovery reply over tcp to %s" % (origin, str(client)))
+                            self.fhdhr.logger.ssdp("Sending %s discovery reply over tcp to %s" % (origin_name, str(client)))
                             connection.send(responsePacket)
 
                 elif packetType == HDHOMERUN_TYPE_GETSET_REQ:
                     self.fhdhr.logger.ssdp('Get set request received from ' + client[0])
-                    responsePacket = self.discovery_shared.getset_responsePacket(origin, requestPayload)
+                    responsePacket = self.discovery_shared.getset_responsePacket(origin_name, requestPayload)
                     if responsePacket:
                         connection.send(responsePacket)
 

@@ -15,17 +15,18 @@ class Lineup_XML_Origin():
         self.interface = self.fhdhr.device.interfaces[self.plugin_utils.namespace]
 
     def __call__(self, origin, *args):
-        return self.get(origin, *args)
+        origin_name = origin
+        return self.get(origin_name, *args)
 
-    def get(self, origin, *args):
+    def get(self, origin_name, *args):
 
         base_url = request.url_root[:-1]
 
         show = request.args.get('show', default="all", type=str)
 
         chan_guide = []
-        if origin in self.fhdhr.origins.list_origins:
-            chan_guide = self.interface.get_channel_lineup(origin, base_url, show)
+        if origin_name in self.fhdhr.origins.list_origins:
+            chan_guide = self.interface.get_channel_lineup(origin_name, base_url, show)
 
         out = xml.etree.ElementTree.Element('Lineup')
         for lineup_dict in chan_guide:
